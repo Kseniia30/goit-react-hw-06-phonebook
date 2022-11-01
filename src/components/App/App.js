@@ -1,31 +1,41 @@
 import { ContactSection } from "components/ContactSection/ContactSection";
 import { SubmitForm } from "components/Form/Form";
-import { useEffect, useState } from "react";
 import { Container, Title } from "./App.styled";
-import { useLocalStorage } from "../../hooks/useLocalStorage"
-import { nanoid } from "nanoid";
+import { nanoid } from '@reduxjs/toolkit'
+import { useSelector, useDispatch } from 'react-redux'
+import { addContact, deleteContact, findContact } from 'redux/store'
 
 export const AppForm = () => {
-    const [contacts, setContacts] = useLocalStorage("contacts", [])
-    const [filter, setFilter] = useState("")
+    const dispatch = useDispatch()
+    const contacts = useSelector(state => state.contacts)
+    const filtered = useSelector(state => state.filteredContacts)
 
-    const addFormInfo = (name, number) => {
+    const addFormInfo = evt => {
+        evt.preventDefault()
+        const form = document.querySelector("#root > div > form")
+        const name = evt.target.elements.name.value
+        const number = evt.target.elements.number.value
+
         const allContactsName = contacts.map(contact => contact.name.toLowerCase())
+        
         if (allContactsName.includes(name.toLowerCase())) {
             alert(`${name} is already in contacts`)
         }
         else {
-            setContacts(prevState => {
-                const newContact = { id: nanoid(), name, number }
-                return [...prevState, newContact]})
+            dispatch(addContact({ id: nanoid(), name, number }))
         }
+        form.reset()
     }
-    const filterChange = evt => {
-        setFilter(evt.currentTarget.value)
+
+    const onDeleteContact = (id) => {
+        dispatch(deleteContact(id))
+    }
+    const filterChange = (evt) => {
+        dispatch(findContact(evt.target.value))
     }
     const filtering = () => {
-        const normalizedFilter = filter.toLowerCase();
-        if (filter.length) {
+        const normalizedFilter = filtered.toLowerCase();
+        if (filtered.length) {
             return contacts.filter(contact =>
                 contact.name.toLowerCase().includes(normalizedFilter),
             )
@@ -33,19 +43,14 @@ export const AppForm = () => {
             return contacts;
         }
     }
-    const onDeleteContact = id => {
-        setContacts(contacts.filter(contact => contact.id !== id))
-    }
 
-    useEffect(() => {
 
-    }, [filter, contacts])
     return (
         <Container>
             <Title>Phonebook</Title>
-            <SubmitForm handleForm={addFormInfo}/>
+            <SubmitForm onFormSubmit={addFormInfo}/>
             {contacts.length !== 0 &&
-                <ContactSection value={filter} onChange={filterChange} filterItem={filtering} onDelete={onDeleteContact} />
+                <ContactSection value={filtered} onChange={filterChange} filterItem={filtering} onDelete={onDeleteContact} />
             }
         </Container>
         )
