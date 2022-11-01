@@ -3,7 +3,7 @@ import { SubmitForm } from "components/Form/Form";
 import { Container, Title } from "./App.styled";
 import { nanoid } from '@reduxjs/toolkit'
 import { useSelector, useDispatch } from 'react-redux'
-import { addContact, deleteContact, findContact } from 'redux/store'
+import { addContact, deleteContact, findContact } from 'redux/actions'
 
 export const AppForm = () => {
     const dispatch = useDispatch()
